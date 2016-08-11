@@ -6,7 +6,7 @@
 ## 简要说明
 
 ### DOM方法实现
-whoIsWinner()函数、judge()函数、chessArrayInit()， 为DOM实现、Canvas实现的共同方法。
+`whoIsWinner()`函数、`judge()`函数、`chessArrayInit()`函数， 为DOM实现、Canvas实现的共同方法。
 playAgain() 函数 思路是一样的，有些许改变。
 createBoard() 函数 在DOM实现中，是通过DOM调用createElement()函数，来不断创建节点，达到创建棋盘的作用。
 play() 函数，在节点上进行onclick监听，点击后在该节点绘制相应颜色的棋子。并赋值给chessArray二维数组。
