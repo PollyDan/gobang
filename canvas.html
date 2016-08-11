@@ -1,0 +1,271 @@
+Canvas方法实现
+whoIsWinner()函数、judge()函数、chessArrayInit()， 为DOM实现、Canvas实现的共同方法。
+playAgain() 函数 思路是一样的，有些许改变。只能开始，不能重新开始。
+createBoard() 函数 在Canvas实现中，是通过getContext()函数获取上下文，通过划线的方式来得到棋盘。
+play() 函数，监听鼠标事件，获取鼠标的坐标后进行计算。
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>五子棋对战</title>
+    <style type="text/css">
+       body{
+                width: 99%;
+                height: 900px;
+                text-align: center;
+                background-color: #c8c8c8;
+            }
+            button{
+                width: 120px;
+                height: 40px;
+                border-radius: 20px;
+                border: 1px solid #444;
+                outline: none;
+            }
+            #chessboard{
+               width: 821px;
+               height: 821px;
+               padding: 20px;
+               background-color: #905a3d;
+               border: 6px solid #5f3c23;
+               margin: 20px auto; 
+               position: relative;
+            }
+
+            body > div{
+                width: 821px;
+                height: 716px;
+                margin: auto;
+                position: relative;
+            }
+            .player{
+                width: 130px;
+                height: 116px;
+                background-color: #8c8c8c;
+                text-align: left;
+                line-height: 50px;
+                position: absolute;
+                top:20px;
+                left: -135px;
+                z-index: 100;
+            }
+            .player > div span{
+                display: inline-block;
+                width:40px;
+                height: 40px;
+                position: relative;
+                top:12px;
+                margin-left: 10px;
+                border-radius: 100%;
+            }
+            .player > div input{
+                width: 56px;
+                height: 30px;
+                font-size: 20px;
+                line-height: 30px;
+                margin-left: 10px;
+            }
+
+            #begin{
+                width: 862px;
+                height: 862px;
+                position: absolute;
+                background-color: #8c8c8c;
+                opacity: 0.7;
+                filter:alpha(opacity=70);
+                top:25px;
+                left: 6px;
+            }
+
+            #begin p{
+                color: #c8c8c8;
+                font-size: 40px;
+                margin-top: 200px;
+            }
+    </style>
+    <script type="text/javascript">
+        var canvas;
+        var context;
+        var isWhite = true;//设置是否该轮到白棋
+        var isBegin = false; //设置开始
+
+        var img_white = new Image();
+        img_white.src = "images/white.png";//白棋图片
+        var img_black = new Image();
+        img_black.src = "images/black.png";//黑棋图片
+ 
+        //建立一个二维数组，并初始化二维数组
+        var chessArray = new Array();//这个为棋盘的二维数组用来保存棋盘信息，初始化0为没有走过的，1为白棋走的，2为黑棋走的
+        //初始化二维数组chessArray，每项值为0;
+        function chessArrayInit(){
+            for (var i = 0; i < 15; i++) {
+                chessArray[i] = new Array(15);
+                for (var j = 0; j < 15; j++) {
+                    chessArray[i][j] = 0;
+                }
+            }  
+        }
+        chessArrayInit();
+        
+        //初始化棋盘
+        function createBoard() {
+            canvas = document.getElementById("chessboard");
+            context = canvas.getContext("2d");
+
+            for (var i = 0; i <= 800; i += 50) {//绘制棋盘的线
+                context.beginPath();
+                context.moveTo(0, i);
+                context.lineTo(800, i);
+                context.closePath();
+                context.stroke();
+ 
+                context.beginPath();
+                context.moveTo(i, 0);
+                context.lineTo(i, 800);
+                context.closePath();
+                context.stroke();
+            }
+        }
+
+        //绘制下棋，鼠标点击时发生
+        function play(e) {
+
+            // 计算鼠标点击区域的值，取整
+            var x = parseInt(( (e.clientX-565) - 25) / 50);
+            var y = parseInt(( (e.clientY-167) - 25) / 50);
+ 
+            // 判断该位置是否被下过，以及是否开始
+            if( (chessArray[x][y] == 0) && isBegin )  {
+                if(x >= 0 && x < 15 && y >= 0 && y < 15){
+                    if(isWhite){
+                        context.drawImage(img_white, x * 50 + 25, y * 50 + 25);
+                        chessArray[x][y] = 1;
+                    }else{
+                        context.drawImage(img_black, x * 50 + 25, y * 50 + 25); 
+                        chessArray[x][y] = -1;
+                    }
+                }
+                isWhite =! isWhite;
+            }
+            whoIsWinner(x,y);
+        }
+
+        //判断谁赢
+        function whoIsWinner(Y,X){
+                var point = 1;
+                var chessValue = chessArray[Y][X];
+
+                //生成四个需要检索方向的数组
+                var arrayX = chessArray[Y];  //横排
+                var arrayY = [];  //竖排
+                var arrayXieXia = [];  //斜下方
+                var arrayXieShang = []; //斜上方
+
+                //为arrayY 竖排 赋值
+                for(var i = 0; i < chessArray.length; i++){
+                    arrayY[i] = chessArray[i][X];
+                    console.log( chessArray[i][X] );
+                }
+
+                //为 arrayXieXia 斜下方 赋值
+                var xieXia = 0;
+                if(Y - X > 0){
+                    for(var i=Y-X, j=0; i>-1 && i<15 && j<15; i++, j++){
+                        arrayXieXia[j] = chessArray[i][j];
+                    }
+                    xieXia = X;
+                }else{
+                    for(var j=X-Y, i=0; j>-1 && j<15 && i<15; i++, j++){
+                        arrayXieXia[i] = chessArray[i][j];
+                    }
+                    xieXia = Y;
+                }
+
+                //为 arrayXieShang 斜上方 赋值
+                var xieShang = 0;
+                for(var i=0; Y+i<15 && X-i>-1; i++){
+                    arrayXieShang.unshift(chessArray[Y+i][X-i]);
+                    xieShang = i;
+                }
+                for(var i=1; X+i<15 && Y-i>-1; i++){
+                    arrayXieShang.push(chessArray[Y-i][X+i]);
+                }
+
+                console.log(chessArray[Y][X]);
+                console.log("arrayX = " + arrayX + "; X = " + X + "; isFive = " +  judge(arrayX, X) );
+                console.log("arrayY = " + arrayY + "; Y = " + Y + ";isFive = " + judge(arrayY, Y) );
+                console.log("arrayXieXia = " + arrayXieXia + "; xieXia = " + xieXia + "; isFive = " +  judge(arrayXieXia, xieXia) );
+                console.log("arrayXieShang = " + arrayXieShang + "; xieShang = " + xieShang + "; isFive = " +  judge(arrayXieShang, xieShang) );
+                // 判断
+                if( judge(arrayX, X) || judge(arrayY,Y) || judge(arrayXieXia,xieXia) || judge(arrayXieShang,xieShang) ){
+                    if( chessArray[Y][X] == 1){
+                        alert("白棋胜");
+                        window.location.href="canvas.html";
+                    }
+                    if( chessArray[Y][X] == -1){
+                        alert("黑棋胜");
+                        window.location.href="canvas.html";
+                    }
+                }else{
+
+                }
+        }
+
+        //判断是否有五连
+        function judge(arrayList,position){
+                var chessNum = 1;
+                var ss =1;
+                while(position-ss > -1){
+                    if(arrayList[position-ss] == arrayList[position]){
+                        chessNum++;
+                        ss++;
+                    }else{
+                        break;
+                    }
+                }
+                ss = 1;
+                while(position+ss < 16){
+                    if(arrayList[position+ss] == arrayList[position]){
+                        chessNum++;
+                        ss++;
+                    }else{
+                        break;
+                    }
+                }
+                if(chessNum > 4){
+                    return true;
+                }else{
+                    return false;
+                }
+        }
+
+        //开始下棋
+        function playAgain(){
+            isWhite = true;
+            isBegin = true;
+            document.getElementById("begin").style.display = "none";
+
+        }
+    </script>
+</head>
+<body onload="createBoard();">
+    <h1>五子棋对战</h1>
+    <button  onclick="playAgain();"> 开始 </button>
+    <div>
+        <div class="player">
+            <div>
+                <span><img src="images/white.png" /></span><input type="text" value="白 棋">
+            </div>
+            <div>
+                <span><img src="images/black.png" /></span><input type="text" value="黑 棋">
+            </div>
+        </div>
+        <canvas width="800" id="chessboard" onmousedown="play(event)" height="800">你的浏览器不支持HTML5 canvas  ，请使用 google chrome 浏览器 打开.
+        </canvas>
+        <div id="begin"><p>点击上面开始按钮即可开始游戏</p></div>
+    </div>
+
+</body>
+</html>
